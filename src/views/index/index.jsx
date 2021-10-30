@@ -53,12 +53,12 @@ const renderTopRightUI = (theme, grid, view, {
       </button>
       </div>
       <div className="excalidraw_top-right_function">
-        <div onClick={() => {setView()}}>
+        <div title="视图模式" onClick={() => {setView()}}>
           {
             view ? <Icon type="eye" size="18" /> : <Icon type="eye-outline" size="18" />
           }
         </div>
-        <div onClick={() => {setTheme()}}>
+        <div title="主题" onClick={() => {setTheme()}}>
           {
             theme === 'light' ? <Icon type="contrast-outline" size="18" />
             : <Icon type="contrast" size="18"/>
@@ -67,12 +67,12 @@ const renderTopRightUI = (theme, grid, view, {
         {/* <div onClick={() => {setZen()}}>
           <Icon type="code-outline" size="18" />
         </div> */}
-        <div onClick={() => {setGrid()}}>
+        <div title="网格模式" onClick={() => {setGrid()}}>
           {
             grid ? <Icon type="grid" size="18" /> : <Icon type="grid-outline" size="18" />
           }
         </div>
-        <div onClick={() => {
+        <div title="保存" onClick={() => {
           // TODO: 归档保存
           saveFile();
         }}>
@@ -88,6 +88,10 @@ const renderFooter = () => {
 };
 
 export default function Index() {
+  useEffect(() => {
+    console.log('感谢的Excalidraw和React KUI的支持！');
+    console.log('author: bearxz & github:https://github.com/bearxz! ');
+  }, []);
   const excalidrawRef = useRef(null);
   // 设置视图模式
   const [viewModeEnabled, setViewModeEnabled] = useState(false);
@@ -102,6 +106,9 @@ export default function Index() {
 
   // 获取挂件块ID
   const currentWidgetId = useMemo(() => getCurrentWidgetId(), []);
+
+  // 获取的数据对象
+  const [savedData, setSavedData] = useState(initialData);
 
   async function saveExcalidrawFile() {
     const fileBlob = new Blob([serializeAsJSON(excalidrawRef.current.getSceneElements(), excalidrawRef.current.getAppState())], {
@@ -119,24 +126,15 @@ export default function Index() {
   }
 
   useEffect(() => {
-    console.log('感谢的Excalidraw和React KUI的支持！');
-    console.log('author: bearxz & github:https://github.com/bearxz! ');
     async function getExcalidrawFile() {
       // 获取挂件的custom-excalidraw属性
       const data = await getWidgetAttr(currentWidgetId);
       const excalidrawFileName = data['custom-excalidraw'];
-      if(!excalidrawFileName) {
-        return;
+      if(excalidrawFileName) {
+        downloadFile(excalidrawFileName).then(res => {
+          setSavedData(res);
+        })
       }
-      // 获取文件内容
-      downloadFile(excalidrawFileName).then(res => {
-        if (!res) {
-          return;
-        }
-        setTimeout(() => {
-          excalidrawRef.current.updateScene(res);
-        }, 1000);
-      })
     }
     getExcalidrawFile();
   }, [currentWidgetId]);
@@ -147,7 +145,7 @@ export default function Index() {
         }}>
           <Excalidraw
             ref={excalidrawRef}
-            initialData={initialData}
+            initialData={savedData}
             // onLibraryChange={() => {console.log('hello woeld')}}
             viewModeEnabled={viewModeEnabled}
             zenModeEnabled={zenModeEnabled}
