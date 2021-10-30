@@ -121,6 +121,7 @@ export default function Index() {
     // 获取返回后的地址，保存在挂件块的custom-excalidraw属性上
     setWidgetAttr(currentWidgetId, {
       "custom-excalidraw": fileMap,
+      "data-assets": fileMap,
     });
     excalidrawRef.current.setToastMessage('保存成功');
   }
